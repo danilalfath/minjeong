@@ -1,0 +1,231 @@
+/* ============================================================
+   App Notes (gaya iOS 17): daftar catatan + isi catatan.
+   ============================================================ */
+
+.nt {
+  --tint: #e0a100;
+}
+
+.nt .ui-bar {
+  --bar-bg: rgba(242, 242, 247, 0.86);
+}
+
+.nt .nt-note .ui-bar {
+  --bar-bg: rgba(255, 255, 255, 0.86);
+}
+
+.nt-more {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 0 0 1.500px var(--tint);
+}
+
+.nt-more svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---------------------------------------------------------- daftar */
+
+.nt-list .nv-scroll {
+  padding-bottom: 100px;
+}
+
+.nt-sec {
+  margin: 0;
+  padding: 16px 20px 7px;
+  font-size: 20px;
+  line-height: 25px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.nt-group {
+  margin: 0 16px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.nt-row {
+  display: block;
+  width: 100%;
+  padding: 10px 16px 0;
+  text-align: left;
+}
+
+.nt-row:active {
+  background: #e5e5ea;
+}
+
+.nt-row b {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+.nt-row span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.2px;
+  color: rgba(60, 60, 67, 0.6);
+  box-shadow: inset 0 -0.5px 0 rgba(60, 60, 67, 0.3);
+}
+
+.nt-row:last-child span {
+  box-shadow: none;
+}
+
+.nt-row i {
+  font-style: normal;
+  color: #000;
+  opacity: 0.75;
+}
+
+.nt-row em {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-style: normal;
+}
+
+.nt-row svg {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  margin-right: -4px;
+}
+
+.nt-tool {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 83px;
+  padding: 0 12px 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 6;
+  font-size: 11px;
+  background: var(--bar-bg, rgba(242, 242, 247, 0.9));
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  backdrop-filter: blur(24px) saturate(1.8);
+  box-shadow: 0 -0.5px 0 rgba(0, 0, 0, 0.16);
+}
+
+.nt-tool > span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+}
+
+.nt-note .nt-tool {
+  --bar-bg: rgba(255, 255, 255, 0.9);
+  padding: 0 20px 34px;
+}
+
+/* ---------------------------------------------------------- isi catatan */
+
+.nt-body {
+  padding: 104px 20px 120px;
+  font-size: 17px;
+  line-height: 24px;
+  letter-spacing: -0.4px;
+}
+
+.nt-date {
+  margin-bottom: 12px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: -0.1px;
+  color: rgba(60, 60, 67, 0.5);
+}
+
+.nt-body h2 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.nt-body h3 {
+  margin: 10px 0 2px;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.nt-body p {
+  margin: 0;
+  min-height: 24px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.nt-body p.li {
+  position: relative;
+  padding-left: 24px;
+}
+
+.nt-body p.li::before {
+  content: "•";
+  position: absolute;
+  left: 8px;
+}
+
+.nt-body img {
+  display: block;
+  max-width: 100%;
+  margin: 8px 0;
+  border-radius: 8px;
+}
+
+.nt-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 3px 0;
+  cursor: pointer;
+}
+
+.nt-check i {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.500px rgba(60, 60, 67, 0.35);
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.nt-check.on i {
+  background: var(--tint)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Cpath d='M6.500 11.500 9.700 14.700 15.500 7.800' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 100% no-repeat;
+  box-shadow: none;
+}
+
+.nt-check.on span {
+  color: rgba(60, 60, 67, 0.5);
+}

@@ -1,0 +1,598 @@
+/* ============================================================
+   App Phone (gaya iOS 17): Favorites, Recents, Contacts,
+   Keypad, Voicemail, dan kartu kontak.
+   ============================================================ */
+
+.pn {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #fff;
+  color: #000;
+  --tint: #007aff;
+}
+
+.pn .nv {
+  --tint: #007aff;
+}
+
+.pn .nv-scroll {
+  padding-bottom: 96px;
+}
+
+.pn .ui-tabbar button {
+  position: relative;
+}
+
+.pn-tabbadge {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 9px;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+  text-align: center;
+  color: #fff;
+  background: #ff3b30;
+}
+
+/* All | Missed */
+.pn-seg {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 178px;
+  height: 32px;
+  margin-left: -89px;
+  padding: 2px;
+  display: flex;
+  border-radius: 9px;
+  background: rgba(118, 118, 128, 0.12);
+}
+
+.pn-seg button {
+  flex: 1;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.1px;
+}
+
+.pn-seg button.on {
+  font-weight: 600;
+  background: #fff;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.12),
+    0 3px 1px rgba(0, 0, 0, 0.04);
+}
+
+/* ---------------------------------------------------------- baris daftar */
+
+.pn-row {
+  position: relative;
+  width: 100%;
+  min-height: 60px;
+  padding-left: 40px;
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+
+.pn-row:active {
+  background: #e5e5ea;
+}
+
+.pn-row .out {
+  position: absolute;
+  left: 15px;
+  top: 12px;
+  width: 15px;
+  height: 15px;
+  color: rgba(60, 60, 67, 0.45);
+}
+
+.pn-row .dot {
+  position: absolute;
+  left: 14px;
+  top: 16px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--tint);
+}
+
+.pn-row .mid {
+  flex: 1;
+  min-width: 0;
+  min-height: 60px;
+  padding: 9px 0 8px;
+  display: flex;
+  align-items: center;
+  box-shadow: inset 0 -0.5px 0 rgba(60, 60, 67, 0.3);
+}
+
+.pn-row .tx {
+  flex: 1;
+  min-width: 0;
+}
+
+.pn-row b {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+.pn-row.missed b {
+  color: #ff3b30;
+}
+
+.pn-row small {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.2px;
+  color: rgba(60, 60, 67, 0.6);
+}
+
+.pn-row small svg {
+  width: 13px;
+  height: 13px;
+}
+
+.pn-row .when {
+  flex: none;
+  text-align: right;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.2px;
+  color: rgba(60, 60, 67, 0.6);
+}
+
+.pn-row .info {
+  flex: none;
+  width: 48px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  color: var(--tint);
+}
+
+.pn-row .info svg {
+  width: 23px;
+  height: 23px;
+}
+
+.pn-row.with-avatar {
+  padding-left: 16px;
+  gap: 12px;
+}
+
+.pn-empty {
+  padding: 120px 40px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: rgba(60, 60, 67, 0.3);
+}
+
+/* ---------------------------------------------------------- voicemail */
+
+.pn-vmx {
+  display: none;
+  padding: 0 16px 14px 40px;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.2px;
+  box-shadow: inset 0 -0.5px 0 rgba(60, 60, 67, 0.3);
+}
+
+.pn-vm.open .pn-vmx {
+  display: block;
+}
+
+.pn-vm.open .pn-row .mid {
+  box-shadow: none;
+}
+
+.pn-vm.open .pn-row .when {
+  visibility: hidden;
+}
+
+.pn-vmx .stamp {
+  color: rgba(60, 60, 67, 0.6);
+}
+
+.pn-track {
+  position: relative;
+  height: 3px;
+  margin: 16px 0 6px;
+  border-radius: 2px;
+  background: rgba(120, 120, 128, 0.25);
+}
+
+.pn-track i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-radius: 2px;
+  background: #8e8e93;
+}
+
+.pn-track i::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  top: -3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #8e8e93;
+}
+
+.pn-times {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(60, 60, 67, 0.6);
+}
+
+.pn-ctl {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 8px 0 14px;
+}
+
+.pn-ctl .play {
+  width: 34px;
+  height: 34px;
+  margin-right: auto;
+  display: grid;
+  place-items: center;
+  color: var(--tint);
+}
+
+.pn-ctl .play svg {
+  width: 26px;
+  height: 26px;
+}
+
+.pn-ctl .rnd {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--tint);
+  background: rgba(118, 118, 128, 0.12);
+}
+
+.pn-ctl .rnd.red {
+  color: #ff3b30;
+}
+
+.pn-ctl .rnd svg {
+  width: 18px;
+  height: 18px;
+}
+
+.pn-ctl .rnd:active,
+.pn-ctl .play:active {
+  opacity: 0.5;
+}
+
+.pn-vmx h4 {
+  margin: 0 0 2px;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  color: rgba(60, 60, 67, 0.6);
+}
+
+.pn-vmx p {
+  margin: 0;
+  color: rgba(60, 60, 67, 0.85);
+}
+
+/* ---------------------------------------------------------- contacts */
+
+.pn-mycard {
+  width: 100%;
+  padding: 6px 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+}
+
+.pn-mycard b {
+  display: block;
+  font-size: 20px;
+  line-height: 25px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+.pn-mycard small {
+  font-size: 13px;
+  color: rgba(60, 60, 67, 0.6);
+}
+
+.pn-letter {
+  margin: 0;
+  padding: 14px 16px 4px;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  color: rgba(60, 60, 67, 0.6);
+  box-shadow: inset 0 -0.5px 0 rgba(60, 60, 67, 0.3);
+}
+
+.pn-name {
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin-left: 16px;
+  text-align: left;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  box-shadow: inset 0 -0.5px 0 rgba(60, 60, 67, 0.3);
+}
+
+.pn-name:active {
+  opacity: 0.4;
+}
+
+/* ---------------------------------------------------------- keypad */
+
+.pn-keys {
+  --key: clamp(62px, calc((var(--H) - 290px) / 5.400), 78px); /* tombol mengecil di layar pendek */
+  position: absolute;
+  inset: 0 0 83px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 14px;
+}
+
+.pn-num {
+  height: 48px;
+  max-width: 320px;
+  margin-bottom: 22px;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 36px;
+  line-height: 48px;
+  letter-spacing: 0.4px;
+}
+
+.pn-pad {
+  display: grid;
+  grid-template-columns: repeat(3, var(--key));
+  gap: 15px 26px;
+}
+
+.pn-pad button {
+  width: var(--key);
+  height: var(--key);
+  border-radius: 50%;
+  padding-top: calc((var(--key) - 62px) / 2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #e5e5ea;
+  transition: background 0.35s ease;
+}
+
+.pn-pad button.down {
+  background: #b9b9be;
+  transition-duration: 0s;
+}
+
+.pn-pad b {
+  font-size: 36px;
+  line-height: 42px;
+  font-weight: 400;
+}
+
+.pn-pad small {
+  height: 12px;
+  font-size: 10px;
+  line-height: 12px;
+  font-weight: 700;
+  letter-spacing: 2.300px;
+  margin-right: -2.300px;
+}
+
+.pn-pad .sym b {
+  line-height: 62px;
+}
+
+.pn-pad .star b {
+  font-size: 54px;
+  line-height: 84px;
+}
+
+.pn-callrow {
+  display: grid;
+  grid-template-columns: repeat(3, var(--key));
+  gap: 26px;
+  margin-top: 15px;
+  align-items: center;
+}
+
+.pn-call {
+  grid-column: 2;
+  width: var(--key);
+  height: var(--key);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff !important;
+  background: #34c759;
+}
+
+.pn-call svg {
+  width: 36px;
+  height: 36px;
+}
+
+.pn-call:active {
+  background: #2aa24a;
+}
+
+.pn-del {
+  justify-self: center;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  color: #c7c7cc !important;
+  visibility: hidden;
+}
+
+.pn-del.show {
+  visibility: visible;
+}
+
+.pn-del svg {
+  width: 30px;
+  height: 30px;
+}
+
+/* ---------------------------------------------------------- kartu kontak */
+
+.pn-card {
+  padding: 104px 16px 0;
+  text-align: center;
+}
+
+.pn-card h2 {
+  margin: 10px 0 14px;
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+.pn-acts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.pn-acts button {
+  height: 58px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 11px;
+  letter-spacing: 0.1px;
+  color: var(--tint) !important;
+  background: #fff;
+}
+
+.pn-acts button.off {
+  color: rgba(60, 60, 67, 0.3) !important;
+}
+
+.pn-acts svg {
+  width: 23px;
+  height: 23px;
+}
+
+.pn-acts button:active,
+.pn-box button:active {
+  opacity: 0.45;
+}
+
+.pn-box {
+  margin-bottom: 14px;
+  padding: 0 16px;
+  border-radius: 12px;
+  text-align: left;
+  font-size: 17px;
+  letter-spacing: -0.4px;
+  background: #fff;
+}
+
+.pn-box > * {
+  display: block;
+  width: 100%;
+  padding: 11px 0;
+  text-align: left;
+  box-shadow: inset 0 -0.5px 0 rgba(60, 60, 67, 0.25);
+}
+
+.pn-box > *:last-child {
+  box-shadow: none;
+}
+
+.pn-box small {
+  display: block;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.2px;
+  color: #000;
+}
+
+.pn-box .blue,
+.pn-box button {
+  color: var(--tint) !important;
+}
+
+.pn-box button.red {
+  color: #ff3b30 !important;
+}
+
+.pn-box .day {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+.pn-box .call {
+  display: flex;
+  gap: 14px;
+  font-size: 15px;
+  letter-spacing: -0.2px;
+  box-shadow: none;
+  padding: 0 0 9px;
+}
+
+.pn-box .call i {
+  width: 74px;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+.pn-box .call em {
+  font-style: normal;
+  color: rgba(60, 60, 67, 0.6);
+}
+
+.pn-box .notes {
+  min-height: 78px;
+}

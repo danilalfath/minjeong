@@ -1,0 +1,382 @@
+/* ============================================================
+   Komponen iOS yang dipakai bersama oleh app (Messages, Notes,
+   Phone, Instagram): tumpukan halaman, bar atas, judul besar,
+   kolom Search, tab bar, avatar, banner notifikasi, layar kode.
+   ============================================================ */
+
+/* ---------------------------------------------------------- tumpukan halaman */
+
+.nv {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+  color: #000;
+  --tint: #007aff;
+}
+
+.nv button {
+  color: inherit;
+}
+
+.nv-view {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #fff;
+  transition:
+    transform 0.46s var(--ease),
+    filter 0.46s var(--ease);
+  will-change: transform;
+}
+
+.nv-view.gray {
+  background: #f2f2f7;
+}
+
+.nv-view.is-pushed {
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.1);
+}
+
+.nv-view.is-enter {
+  transform: translateX(100%);
+}
+
+.nv-view.is-under {
+  transform: translateX(-28%);
+  filter: brightness(0.86);
+}
+
+.nv-scroll {
+  position: absolute;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nv-scroll::-webkit-scrollbar,
+.ui-hscroll::-webkit-scrollbar {
+  display: none;
+}
+
+.ui-hscroll {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  touch-action: pan-x pan-y;
+  overscroll-behavior-x: contain;
+}
+
+/* ---------------------------------------------------------- bar atas (status 54 + bar 44) */
+
+.ui-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 98px;
+  padding: 54px 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 5;
+}
+
+.ui-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  background: var(--bar-bg, rgba(249, 249, 249, 0.86));
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  backdrop-filter: blur(24px) saturate(1.8);
+  box-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.2);
+  transition: opacity 0.2s ease;
+}
+
+.ui-bar.solid::before,
+.ui-bar.scrolled::before {
+  opacity: 1;
+}
+
+.ui-bar .ttl {
+  position: absolute;
+  left: 96px;
+  right: 96px;
+  bottom: 0;
+  height: 44px;
+  line-height: 44px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.ui-bar.solid .ttl,
+.ui-bar.scrolled .ttl {
+  opacity: 1;
+}
+
+.ui-btn {
+  height: 44px;
+  min-width: 40px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 17px;
+  letter-spacing: -0.4px;
+  white-space: nowrap;
+  color: var(--tint) !important;
+}
+
+.ui-btn svg {
+  width: 24px;
+  height: 24px;
+  flex: none;
+}
+
+.ui-btn svg.chev {
+  width: 12px;
+  height: 21px;
+  margin-left: -2px;
+}
+
+.ui-btn b {
+  font-weight: 600;
+}
+
+.ui-btn:active,
+.ui-tap:active {
+  opacity: 0.4;
+}
+
+.ui-group {
+  display: flex;
+  align-items: center;
+}
+
+/* ---------------------------------------------------------- judul besar & Search */
+
+.ui-large {
+  margin: 0;
+  padding: 101px 16px 6px;
+  font-size: 34px;
+  line-height: 41px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.ui-search {
+  height: 36px;
+  margin: 2px 16px 10px;
+  padding: 0 8px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 17px;
+  letter-spacing: -0.4px;
+  color: rgba(60, 60, 67, 0.6);
+  background: rgba(118, 118, 128, 0.12);
+}
+
+.ui-search svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+}
+
+.ui-search span {
+  flex: 1;
+}
+
+/* ---------------------------------------------------------- tab bar bawah */
+
+.ui-tabbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 83px;
+  padding: 0 2px 34px;
+  display: flex;
+  z-index: 6;
+  background: var(--bar-bg, rgba(249, 249, 249, 0.9));
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  backdrop-filter: blur(24px) saturate(1.8);
+  box-shadow: 0 -0.5px 0 rgba(0, 0, 0, 0.2);
+}
+
+.ui-tabbar button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding-top: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #999 !important;
+}
+
+.ui-tabbar button.on {
+  color: var(--tint) !important;
+}
+
+.ui-tabbar svg {
+  width: 27px;
+  height: 27px;
+}
+
+/* ---------------------------------------------------------- avatar */
+
+.ui-avatar {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: #fff;
+  background: linear-gradient(#a5abb8, #858a99);
+}
+
+.ui-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------- banner notifikasi */
+
+#banner {
+  position: absolute;
+  top: 52px;
+  left: 8px;
+  right: 8px;
+  z-index: 24;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 64px;
+  padding: 12px 14px 12px 12px;
+  border-radius: 24px;
+  text-align: left;
+  color: #000;
+  background: rgba(245, 245, 247, 0.8);
+  -webkit-backdrop-filter: blur(30px) saturate(1.8);
+  backdrop-filter: blur(30px) saturate(1.8);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.2);
+  transform: translateY(-150px);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.5s var(--ease),
+    opacity 0.3s ease;
+}
+
+#banner.show {
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#banner img {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+}
+
+#banner span {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.2px;
+}
+
+#banner b {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 600;
+}
+
+#banner b small {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(60, 60, 67, 0.6);
+}
+
+#banner i {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-style: normal;
+}
+
+/* ---------------------------------------------------------- layar kode di dalam app */
+
+.codesheet {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  color: #fff;
+  background: rgba(26, 26, 30, 0.74);
+  -webkit-backdrop-filter: blur(34px) saturate(1.4);
+  backdrop-filter: blur(34px) saturate(1.4);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.codesheet.show {
+  opacity: 1;
+}
+
+.pc-sub {
+  max-width: 300px;
+  margin-top: 6px;
+  text-align: center;
+  font-size: 15px;
+  line-height: 20px;
+  opacity: 0.85;
+}
+
+.pc-sub + .pc-dots {
+  margin-top: 20px;
+}
+
+/* petunjuk kode: muncul setelah beberapa kali salah */
+.pc-hint {
+  height: 40px;
+  max-width: 290px;
+  margin-bottom: 4px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 17px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.pc-hint.show {
+  opacity: 0.85;
+}

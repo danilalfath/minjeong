@@ -1,0 +1,954 @@
+/* ============================================================
+   iOS shell — bingkai HP, status bar, lock screen, passcode, home.
+   Semua ukuran memakai "pt" iPhone 15 (layar 393 x 852), lalu
+   seluruh HP di-scale oleh js/ios.js supaya pas di layar pengunjung.
+   ============================================================ */
+
+@font-face {
+  font-family: "SF Pro";
+  src: url("../assets/fonts/SFPro-Regular.woff") format("woff");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "SF Pro";
+  src: url("../assets/fonts/SFPro-Medium.woff") format("woff");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "SF Pro";
+  src: url("../assets/fonts/SFPro-Bold.woff") format("woff");
+  font-weight: 600 700;
+  font-display: swap;
+}
+
+:root {
+  --W: 393px;
+  --H: 852px;
+  --P: 98px; /* jarak antar baris ikon */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --blue: #007aff;
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+}
+
+body {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+@media (min-width: 560px) {
+  body {
+    background: radial-gradient(120% 90% at 50% 40%, #2b2c31 0%, #131316 55%, #050506 100%);
+  }
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* ---------------------------------------------------------- bingkai */
+
+#device {
+  --bezel: 0px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--W) + 2 * var(--bezel));
+  height: calc(var(--H) + 2 * var(--bezel));
+  transform-origin: 0 0;
+  visibility: hidden; /* muncul setelah ios.js selesai mengukur layar */
+}
+
+#device.ready {
+  visibility: visible;
+}
+
+#device.framed {
+  --bezel: 12px;
+  border-radius: 66px;
+  background: #000;
+  box-shadow:
+    0 0 0 1px #000,
+    0 40px 90px rgba(0, 0, 0, 0.55),
+    0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* rangka titanium */
+#device.framed::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 70px;
+  background: linear-gradient(140deg, #77777c 0%, #3b3b3f 18%, #5d5d62 45%, #2c2c30 70%, #55555a 100%);
+  z-index: -1;
+}
+
+.hw {
+  display: none;
+  position: absolute;
+  width: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #2f2f33, #6a6a70);
+  z-index: -2;
+}
+
+#device.framed .hw {
+  display: block;
+}
+
+.hw-action {
+  left: -7px;
+  top: 124px;
+  height: 30px;
+}
+.hw-volup {
+  left: -7px;
+  top: 184px;
+  height: 58px;
+}
+.hw-voldown {
+  left: -7px;
+  top: 256px;
+  height: 58px;
+}
+.hw-power {
+  right: -7px;
+  top: 220px;
+  height: 94px;
+  background: linear-gradient(270deg, #2f2f33, #6a6a70);
+}
+
+#screen {
+  position: absolute;
+  inset: var(--bezel);
+  overflow: hidden;
+  border-radius: 38px;
+  background: #000;
+  color: #fff;
+  touch-action: none;
+  isolation: isolate;
+}
+
+#device.framed #screen {
+  border-radius: 55px;
+}
+
+.wall {
+  position: absolute;
+  inset: 0;
+  background: #1c1c1e center / cover no-repeat;
+}
+
+/* ---------------------------------------------------------- status bar */
+
+#statusbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 59px;
+  z-index: 20;
+  color: #fff;
+  pointer-events: none;
+  transition:
+    color 0.25s ease,
+    opacity 0.25s ease;
+}
+
+#screen[data-bar="dark"] #statusbar {
+  color: #000;
+}
+
+#screen.hide-status #statusbar {
+  opacity: 0;
+}
+
+.sb-time {
+  position: absolute;
+  left: 22px;
+  width: 104px;
+  top: 19px;
+  text-align: center;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sb-right {
+  position: absolute;
+  right: 31px;
+  top: 23px;
+  height: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6.500px;
+}
+
+.sb-cell {
+  width: 18px;
+  height: 12px;
+  fill: currentColor;
+}
+
+.sb-wifi {
+  width: 17px;
+  height: 12px;
+  fill: currentColor;
+}
+
+.sb-batt {
+  position: relative;
+  width: 25px;
+  height: 12.500px;
+  margin-right: 2.500px;
+}
+
+/* garis luar baterai dibuat lebih pudar dari isinya, seperti di iOS */
+.sb-batt::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  opacity: 0.4;
+}
+.sb-batt::after {
+  content: "";
+  position: absolute;
+  right: -2.500px;
+  top: 4.200px;
+  width: 1.500px;
+  height: 4.100px;
+  border-radius: 0 1.200px 1.200px 0;
+  background: currentColor;
+  opacity: 0.45;
+}
+.sb-batt i {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  bottom: 2px;
+  width: calc((100% - 4px) * var(--level, 1));
+  border-radius: 2.200px;
+  background: currentColor;
+}
+
+#island {
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  width: 126px;
+  height: 37px;
+  margin-left: -63px;
+  border-radius: 19px;
+  background: #000;
+  z-index: 21;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------- home indicator */
+
+#homebar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 30px;
+  z-index: 22;
+  color: #fff;
+  pointer-events: none;
+  transition:
+    color 0.25s ease,
+    opacity 0.25s ease;
+}
+
+#homebar i {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: 139px;
+  height: 5px;
+  margin-left: -69.500px;
+  border-radius: 3px;
+  background: currentColor;
+}
+
+#screen.is-home #homebar {
+  opacity: 0;
+}
+
+#screen.in-app #homebar {
+  opacity: 1;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+#screen.in-app[data-bar="dark"] #homebar,
+#screen.in-app[data-homebar="dark"] #homebar {
+  color: #000;
+}
+
+#screen.in-app[data-homebar="light"] #homebar {
+  color: #fff;
+}
+
+/* ---------------------------------------------------------- lock screen */
+
+#wall-lock {
+  z-index: 4;
+  transition:
+    opacity 0.5s ease,
+    visibility 0s linear 0.5s;
+}
+
+#lock {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  color: #fff;
+  transition:
+    transform 0.5s var(--ease),
+    opacity 0.35s ease,
+    visibility 0s linear 0.5s;
+  will-change: transform;
+}
+
+#screen.is-lock #wall-lock,
+#screen.is-lock #lock,
+#screen.is-pass #wall-lock {
+  transition-delay: 0s;
+}
+
+#screen.is-pass #lock,
+#screen.is-home #lock {
+  transform: translateY(-34%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#screen.is-home #wall-lock {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.lock-date {
+  position: absolute;
+  top: 100px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 22px;
+  line-height: 26px;
+  font-weight: 600;
+  letter-spacing: 0.15px;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.12);
+}
+
+.lock-time {
+  position: absolute;
+  top: 124px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 104px;
+  line-height: 104px;
+  font-weight: 700;
+  letter-spacing: -3px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.1);
+}
+
+.lock-btn {
+  position: absolute;
+  bottom: 53px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgba(38, 38, 42, 0.46);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  backdrop-filter: blur(22px) saturate(1.5);
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.lock-btn.left {
+  left: 46px;
+}
+.lock-btn.right {
+  right: 46px;
+}
+.lock-btn svg {
+  width: 24px;
+  height: 24px;
+}
+.lock-btn:active {
+  transform: scale(1.12);
+}
+.lock-btn.on {
+  background: #fff;
+  color: #1c1c1e;
+}
+
+.lock-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 27px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+  animation: hint 3.200s ease-in-out infinite;
+  cursor: pointer;
+}
+
+@keyframes hint {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+#screen.is-lock #homebar i {
+  animation: nudge 3.200s ease-in-out infinite;
+}
+
+@keyframes nudge {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* notifikasi (opsional) */
+.lock-notifs {
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  bottom: 124px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notif {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 64px;
+  padding: 12px 14px 12px 12px;
+  border-radius: 23px;
+  background: rgba(60, 60, 64, 0.5);
+  -webkit-backdrop-filter: blur(26px) saturate(1.6);
+  backdrop-filter: blur(26px) saturate(1.6);
+  color: #fff;
+  text-align: left;
+}
+
+.notif img {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+}
+
+.notif div {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  line-height: 20px;
+}
+
+.notif b {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.notif b small {
+  font-size: 13px;
+  font-weight: 400;
+  opacity: 0.6;
+}
+
+.notif span {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---------------------------------------------------------- passcode */
+
+#passcode {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  color: #fff;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.35s ease,
+    visibility 0s linear 0.35s;
+}
+
+#screen.is-pass #passcode {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.pc-bg {
+  position: absolute;
+  inset: -60px;
+  background: #1c1c1e center / cover no-repeat;
+  filter: blur(34px) saturate(1.25) brightness(0.72);
+}
+
+.pc-body {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 96px;
+  padding-top: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.pc-title {
+  font-size: 20px;
+  line-height: 25px;
+  letter-spacing: 0.2px;
+}
+
+.pc-dots {
+  display: flex;
+  gap: 24px;
+  margin: 27px 0 12px;
+}
+
+.pc-dots i {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1.300px solid #fff;
+  transition: background 0.12s ease;
+}
+
+.pc-dots i.on {
+  background: #fff;
+}
+
+.pc-dots.shake {
+  animation: shake 0.42s linear;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  12% {
+    transform: translateX(-26px);
+  }
+  30% {
+    transform: translateX(22px);
+  }
+  48% {
+    transform: translateX(-16px);
+  }
+  66% {
+    transform: translateX(10px);
+  }
+  84% {
+    transform: translateX(-5px);
+  }
+}
+
+.pc-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 80px);
+  gap: 16px 27px;
+}
+
+.pc-key {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  padding-top: 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.19);
+  color: #fff;
+  transition: background 0.45s ease;
+}
+
+.pc-key.down {
+  background: rgba(255, 255, 255, 0.58);
+  transition-duration: 0s;
+}
+
+.pc-key b {
+  font-size: 37px;
+  line-height: 44px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+.pc-key small {
+  height: 12px;
+  margin-top: -2px;
+  font-size: 10px;
+  line-height: 12px;
+  font-weight: 700;
+  letter-spacing: 2.300px;
+  margin-right: -2.300px;
+}
+
+.pc-key.gap {
+  visibility: hidden;
+}
+
+.pc-foot {
+  position: absolute;
+  left: 44px;
+  right: 44px;
+  bottom: 44px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 17px;
+  line-height: 22px;
+}
+
+.pc-foot button {
+  padding: 10px 6px;
+}
+
+.pc-foot button:active {
+  opacity: 0.5;
+}
+
+/* ---------------------------------------------------------- home screen */
+
+#wall-home {
+  z-index: 1;
+}
+
+#home {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  transition:
+    transform 0.5s var(--ease),
+    opacity 0.3s ease;
+}
+
+#screen.in-app #home {
+  transform: scale(1.18);
+  opacity: 0;
+  pointer-events: none;
+}
+
+#home.arrive #grid > *,
+#home.arrive #dock,
+#home.arrive #search-pill {
+  animation: arrive 0.75s cubic-bezier(0.2, 0.85, 0.25, 1) both;
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+#home.arrive #search-pill {
+  animation-name: arrive-pill;
+}
+
+@keyframes arrive-pill {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) scale(1.9);
+  }
+}
+
+#grid {
+  position: absolute;
+  left: 27.500px;
+  top: 76px;
+  display: grid;
+  grid-template-columns: repeat(4, 60px);
+  grid-auto-rows: 60px;
+  column-gap: 32.660px;
+  row-gap: calc(var(--P) - 60px);
+  grid-auto-flow: row dense;
+}
+
+.icon {
+  position: relative;
+  display: block;
+  width: 60px;
+  height: 60px;
+  color: #fff;
+}
+
+.icon-img {
+  display: block;
+  width: 60px;
+  height: 60px;
+  border-radius: 13.500px;
+  overflow: hidden;
+  background: #2c2c2e;
+  transition: filter 0.18s ease;
+}
+
+.icon-img img,
+.icon-img svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.icon:active .icon-img,
+.widget:active .widget-img {
+  filter: brightness(0.62);
+  transition-duration: 0s;
+}
+
+.icon-label {
+  position: absolute;
+  top: 65px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 400;
+  letter-spacing: 0.1px;
+  color: #fff;
+  text-shadow:
+    0 0 7px rgba(0, 0, 0, 0.3),
+    0 1px 1px rgba(0, 0, 0, 0.16);
+  pointer-events: none;
+}
+
+.badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6.500px;
+  border-radius: 12px;
+  background: #ff3b30;
+  color: #fff;
+  font-size: 15.500px;
+  line-height: 24px;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* ikon Calendar yang tanggalnya hidup */
+.cal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+}
+
+.cal i {
+  margin-top: 6.500px;
+  font-style: normal;
+  font-size: 10.500px;
+  line-height: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: #ff3b30;
+}
+
+.cal b {
+  margin-top: -1px;
+  font-size: 34px;
+  line-height: 38px;
+  font-weight: 400;
+  letter-spacing: -0.8px;
+  color: #000;
+}
+
+/* widget foto 2x2 */
+.widget {
+  position: relative;
+  display: block;
+  grid-column: span 2;
+  grid-row: span 2;
+  margin: 0 -2.670px;
+  color: #fff;
+}
+
+.widget-img {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #2c2c2e;
+  transition: filter 0.18s ease;
+}
+
+.widget-img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.widget .icon-label {
+  top: calc(100% + 5px);
+}
+
+#search-pill {
+  position: absolute;
+  left: 50%;
+  bottom: 119px;
+  transform: translateX(-50%);
+  height: 30px;
+  padding: 0 11px 0 10px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.1px;
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.22);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  backdrop-filter: blur(20px) saturate(1.6);
+}
+
+#search-pill svg {
+  width: 11px;
+  height: 11px;
+}
+
+#dock {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  height: 94px;
+  padding: 0 15.500px;
+  border-radius: 36px;
+  display: flex;
+  align-items: center;
+  gap: 32.660px;
+  background: rgba(255, 255, 255, 0.24);
+  -webkit-backdrop-filter: blur(30px) saturate(1.7);
+  backdrop-filter: blur(30px) saturate(1.7);
+}
+
+/* ---------------------------------------------------------- app container */
+
+#app {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  background: #fff;
+  color: #000;
+  will-change: transform, clip-path;
+}
+
+#app[hidden] {
+  display: none;
+}
+
+/* overflow: clip = seperti hidden, tapi isinya tidak bisa ikut tergeser
+   saat tombol di luar layar mendapat fokus (keyboard / pembaca layar) */
+@supports (overflow: clip) {
+  body,
+  #screen,
+  #screen #app,
+  #screen .nv,
+  #screen .nv-view,
+  #screen .ph,
+  #screen .ph-view,
+  #screen .pn,
+  #screen .ig {
+    overflow: clip;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lock-hint,
+  #screen.is-lock #homebar i {
+    animation: none;
+  }
+  .lock-hint {
+    opacity: 0.85;
+  }
+}

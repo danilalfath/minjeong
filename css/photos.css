@@ -1,0 +1,1010 @@
+/* ============================================================
+   App Photos (gaya iOS 18): library, Recent Days, Albums,
+   halaman album, dan penampil foto.
+   ============================================================ */
+
+.ph {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+  color: #000;
+}
+
+.ph button {
+  color: inherit;
+}
+
+.ph-view {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #f2f2f7;
+  transition:
+    transform 0.46s var(--ease),
+    filter 0.46s var(--ease);
+  will-change: transform;
+}
+
+.ph-view.cv {
+  background: #fff;
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.1);
+}
+
+.ph-view.is-enter {
+  transform: translateX(100%);
+}
+
+.ph-view.is-under {
+  transform: translateX(-28%);
+  filter: brightness(0.86);
+}
+
+.ph-scroll {
+  position: absolute;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ph-scroll::-webkit-scrollbar,
+.ph-row::-webkit-scrollbar,
+.ph-albums::-webkit-scrollbar,
+.pv-track::-webkit-scrollbar,
+.pv-strip::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------------------------------------------------------- grid foto */
+
+.ph-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+
+.ph-cell {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #e5e5ea;
+}
+
+.ph-cell img,
+.ph-day img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.ph-cell:active img {
+  filter: brightness(0.8);
+}
+
+.ph-lib {
+  background: #f2f2f7;
+}
+
+/* ---------------------------------------------------------- header utama */
+
+.ph-head {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 106px;
+  padding: 57px 16px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 5;
+  color: #fff;
+  pointer-events: none;
+  transition: color 0.25s ease;
+}
+
+.ph-head::before,
+.ph-head::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: -1;
+  transition: opacity 0.25s ease;
+}
+
+.ph-head::before {
+  height: 168px;
+  background: linear-gradient(rgba(0, 0, 0, 0.52), rgba(0, 0, 0, 0.3) 48%, rgba(0, 0, 0, 0));
+}
+
+.ph-head::after {
+  bottom: 0;
+  opacity: 0;
+  background: rgba(242, 242, 247, 0.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  backdrop-filter: blur(24px) saturate(1.8);
+  box-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.14);
+}
+
+.ph-head.solid {
+  color: #000;
+}
+.ph-head.solid::before {
+  opacity: 0;
+}
+.ph-head.solid::after {
+  opacity: 1;
+}
+
+.ph-head h1 {
+  margin: 0;
+  font-size: 32px;
+  line-height: 38px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.ph-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.ph-search {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--blue);
+  color: #fff !important;
+}
+
+.ph-search svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ph-pill {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 15px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  background: rgba(118, 118, 128, 0.62);
+  -webkit-backdrop-filter: blur(14px) saturate(1.6);
+  backdrop-filter: blur(14px) saturate(1.6);
+  transition: background 0.25s ease;
+}
+
+.ph-head.solid .ph-pill,
+.cv-bar .ph-pill {
+  background: rgba(118, 118, 128, 0.14);
+}
+
+.ph-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(#a5abb8, #858a99);
+}
+
+.ph-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ph-search:active,
+.ph-pill:active,
+.circ:active {
+  opacity: 0.55;
+}
+
+/* Years / Months / All — muncul saat menggulir ke foto lama */
+.ph-seg {
+  position: absolute;
+  left: 50%;
+  bottom: 36px;
+  z-index: 5;
+  display: flex;
+  padding: 3px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(70, 70, 76, 0.62);
+  -webkit-backdrop-filter: blur(22px) saturate(1.8);
+  backdrop-filter: blur(22px) saturate(1.8);
+  opacity: 0;
+  transform: translate(-50%, 14px);
+  pointer-events: none;
+  transition:
+    opacity 0.25s ease,
+    transform 0.3s var(--ease);
+}
+
+.ph-seg.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.ph-seg span {
+  padding: 6px 15px;
+  border-radius: 17px;
+}
+
+.ph-seg .on {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ---------------------------------------------------------- koleksi */
+
+.ph-coll {
+  padding: 4px 0 96px;
+  background: #f2f2f7;
+}
+
+.ph-sec-h {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 20px 16px 11px;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.ph-sec-h svg {
+  width: 8px;
+  height: 14px;
+  margin-top: 2px;
+  color: #8e8e93;
+}
+
+.ph-sec-h:active {
+  opacity: 0.5;
+}
+
+.ph-row,
+.ph-albums {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 16px;
+  scroll-padding: 0 16px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  touch-action: pan-x pan-y;
+  overscroll-behavior-x: contain;
+}
+
+.ph-row {
+  display: flex;
+  gap: 10px;
+}
+
+.ph-row::after {
+  content: "";
+  flex: 0 0 6px;
+}
+
+.ph-day {
+  position: relative;
+  flex: 0 0 158px;
+  height: 202px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #e5e5ea;
+  scroll-snap-align: start;
+}
+
+.ph-day::after {
+  content: "";
+  position: absolute;
+  inset: 55% 0 0;
+  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
+}
+
+.ph-day span {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
+  z-index: 1;
+  text-align: left;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+}
+
+.ph-day:active,
+.ph-album:active,
+.al-card:active {
+  filter: brightness(0.9);
+}
+
+.ph-albums {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(3, 80px);
+  grid-auto-columns: 252px;
+  gap: 10px;
+}
+
+.ph-albums::after {
+  content: "";
+  width: 6px;
+  grid-row: 1 / -1;
+}
+
+.ph-album {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #fff;
+  text-align: left;
+  scroll-snap-align: start;
+}
+
+.ph-album img {
+  flex: none;
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.ph-album div {
+  min-width: 0;
+  padding: 0 14px;
+}
+
+.ph-album b,
+.al-card b {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 400;
+  letter-spacing: -0.4px;
+}
+
+.ph-album small,
+.al-card small {
+  display: block;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.2px;
+  color: #8e8e93;
+}
+
+.ph-empty {
+  padding: 150px 40px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #8e8e93;
+}
+
+/* ---------------------------------------------------------- halaman album / hari */
+
+.circ {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--blue) !important;
+  background: rgba(118, 118, 128, 0.13);
+}
+
+.circ svg {
+  width: 20px;
+  height: 20px;
+}
+
+.cv-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 104px;
+  padding: 56px 16px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 5;
+}
+
+.cv-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  background: rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  backdrop-filter: blur(24px) saturate(1.8);
+  box-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.16);
+  transition: opacity 0.2s ease;
+}
+
+.cv-bar.scrolled::before {
+  opacity: 1;
+}
+
+.cv-bar .t {
+  position: absolute;
+  left: 76px;
+  right: 76px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.cv-bar.scrolled .t {
+  opacity: 1;
+}
+
+.cv-title {
+  padding: 108px 16px 12px;
+}
+
+.cv-title h2 {
+  margin: 0;
+  font-size: 34px;
+  line-height: 41px;
+  font-weight: 700;
+  letter-spacing: 0.1px;
+}
+
+.cv-sec {
+  margin: 0;
+  padding: 18px 16px 8px;
+  font-size: 20px;
+  line-height: 25px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.cv-foot {
+  padding: 22px 0 100px;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+.al-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 14px;
+  padding: 4px 16px 100px;
+}
+
+.al-card {
+  display: block;
+  min-width: 0;
+  text-align: left;
+}
+
+.al-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  margin-bottom: 7px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #e5e5ea;
+  pointer-events: none;
+}
+
+.al-card b {
+  font-size: 16px;
+  line-height: 21px;
+}
+
+.al-card small {
+  font-size: 14px;
+  line-height: 18px;
+}
+
+/* ---------------------------------------------------------- penampil foto */
+
+.pv {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  color: #000;
+}
+
+.pv-bg {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  transition:
+    background 0.28s ease,
+    opacity 0.3s ease;
+}
+
+.pv.immersive .pv-bg {
+  background: #000;
+}
+
+.pv-track {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  touch-action: pan-x;
+  overscroll-behavior: contain;
+}
+
+.pv-slide {
+  flex: 0 0 100%;
+  height: 100%;
+  padding: 108px 0 152px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  transition: padding 0.3s var(--ease);
+}
+
+.pv.immersive .pv-slide {
+  padding: 0;
+}
+
+.pv-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.pv-top,
+.pv-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  transition: opacity 0.25s ease;
+}
+
+.pv-top {
+  top: 0;
+  padding: 56px 16px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(#fff 60%, rgba(255, 255, 255, 0));
+}
+
+.pv-title {
+  text-align: center;
+  line-height: 1;
+}
+
+.pv-title b {
+  display: block;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.pv-title small {
+  display: block;
+  font-size: 12px;
+  line-height: 15px;
+  color: #8e8e93;
+}
+
+.pv-bottom {
+  bottom: 0;
+  padding: 10px 0 30px;
+  background: linear-gradient(rgba(255, 255, 255, 0), #fff 30%);
+}
+
+.pv-strip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 40px;
+  margin-bottom: 14px;
+  padding: 0 calc(50% - 16px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  touch-action: pan-x;
+}
+
+.pv-strip button {
+  position: relative;
+  flex: 0 0 26px;
+  height: 40px;
+  overflow: hidden;
+  background: #e5e5ea;
+}
+
+.pv-strip button.on {
+  flex-basis: var(--w, 32px);
+  margin: 0 7px;
+}
+
+.pv-strip img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.pv-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.pv-tools .circ {
+  width: 44px;
+  height: 44px;
+}
+
+.pv-tools svg {
+  width: 23px;
+  height: 23px;
+}
+
+.pv-group {
+  display: flex;
+  height: 44px;
+  padding: 0 8px;
+  border-radius: 22px;
+  background: rgba(118, 118, 128, 0.13);
+}
+
+.pv-group button {
+  width: 46px;
+  display: grid;
+  place-items: center;
+  color: var(--blue) !important;
+}
+
+.pv-group button:active {
+  opacity: 0.5;
+}
+
+.pv-group .fav-on path {
+  fill: currentColor;
+}
+
+.pv.immersive .pv-top,
+.pv.immersive .pv-bottom,
+.pv.dragging .pv-top,
+.pv.dragging .pv-bottom,
+.pv.busy .pv-top,
+.pv.busy .pv-bottom {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pv.busy .pv-bg {
+  opacity: 0;
+}
+
+/* ---------------------------------------------------------- Utilities: Favorites, Hidden, Recently Deleted */
+
+.ph-utils {
+  margin: 0 16px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.ph-util {
+  width: 100%;
+  height: 52px;
+  padding: 0 14px 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  box-shadow: inset 0 -0.5px 0 rgba(60, 60, 67, 0.2);
+}
+
+.ph-util:last-child {
+  box-shadow: none;
+}
+
+.ph-util:active {
+  background: #e5e5ea;
+}
+
+.ph-util > svg:first-child {
+  flex: none;
+  width: 23px;
+  height: 23px;
+  color: var(--blue);
+}
+
+.ph-util b {
+  flex: 1;
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: -0.4px;
+}
+
+.ph-util small {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  color: #8e8e93;
+}
+
+.ph-util small svg {
+  width: 15px;
+  height: 15px;
+}
+
+.ph-util > svg:last-child {
+  flex: none;
+  width: 7px;
+  height: 12px;
+  color: #c4c4c7;
+}
+
+/* sisa hari di Recently Deleted */
+.ph-left {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 18px 0 5px;
+  text-align: center;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.55));
+  pointer-events: none;
+}
+
+.cv-foot small {
+  display: block;
+  max-width: 300px;
+  margin: 8px auto 0;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+  letter-spacing: -0.1px;
+  color: #8e8e93;
+}
+
+.cv-foot .none {
+  display: block;
+  padding-top: 120px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #8e8e93;
+}
+
+/* ---------------------------------------------------------- panel info foto (tombol ⓘ) */
+
+.pv-bottom {
+  z-index: 3;
+}
+
+.pv-strip,
+.pv-bottom {
+  transition:
+    opacity 0.25s ease,
+    background 0.25s ease;
+}
+
+.pv-info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  min-height: 430px;
+  padding: 8px 16px 96px;
+  border-radius: 16px 16px 0 0;
+  background: #f2f2f7;
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(105%);
+  transition: transform 0.38s var(--ease);
+}
+
+.pv.info .pv-info {
+  transform: none;
+}
+
+.pv.info .pv-slide {
+  padding-bottom: 440px;
+}
+
+.pv.info .pv-strip {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pv.info .pv-bottom {
+  background: none;
+}
+
+.pv.info .pv-group,
+.pv.info .pv-tools .circ {
+  background: rgba(118, 118, 128, 0.16);
+}
+
+.pv-info .grab {
+  width: 36px;
+  height: 5px;
+  margin: 0 auto 12px;
+  border-radius: 3px;
+  background: rgba(60, 60, 67, 0.3);
+}
+
+.pv-info p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.2px;
+}
+
+.pv-info .cap {
+  padding: 0 0 11px;
+  font-size: 17px;
+  line-height: 22px;
+  letter-spacing: -0.4px;
+  box-shadow: inset 0 -0.5px 0 rgba(60, 60, 67, 0.3);
+}
+
+.pv-info .cap.empty {
+  color: rgba(60, 60, 67, 0.3);
+}
+
+.pv-info .when {
+  padding-top: 11px;
+}
+
+.pv-info .when b {
+  font-weight: 600;
+}
+
+.pv-info .file {
+  padding-bottom: 12px;
+  color: rgba(60, 60, 67, 0.6);
+}
+
+.pv-info .cam {
+  overflow: hidden;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 19px;
+  letter-spacing: -0.2px;
+  background: #fff;
+}
+
+.pv-info .cam > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  background: #e5e5ea;
+}
+
+.pv-info .cam b {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.pv-info .cam > div:first-child i {
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: #8e8e93;
+}
+
+.pv-info .cam > span {
+  display: block;
+  padding: 0 12px;
+  color: rgba(60, 60, 67, 0.75);
+}
+
+.pv-info .cam > span:nth-child(2) {
+  padding-top: 9px;
+}
+
+.pv-info .exif {
+  display: flex;
+  margin-top: 9px;
+  box-shadow: inset 0 0.5px 0 rgba(60, 60, 67, 0.25);
+}
+
+.pv-info .exif i {
+  flex: 1;
+  padding: 8px 0;
+  text-align: center;
+  font-style: normal;
+  font-size: 12px;
+  color: rgba(60, 60, 67, 0.75);
+  box-shadow: inset -0.5px 0 0 rgba(60, 60, 67, 0.25);
+}
+
+.pv-info .exif i:last-child {
+  box-shadow: none;
+}
+
+.pv-info .place {
+  margin-top: 10px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  letter-spacing: -0.2px;
+  background: #fff;
+}
+
+.pv-info .place svg {
+  flex: none;
+  width: 19px;
+  height: 19px;
+  color: #ff3b30;
+}
+
+.pv-hero {
+  position: absolute;
+  z-index: 40;
+  display: block;
+  object-fit: cover;
+  pointer-events: none;
+  will-change: transform, clip-path;
+}
