@@ -22,6 +22,7 @@
     compose: svg('<path d="M19.500 13v5.500a2 2 0 0 1-2 2h-12a2 2 0 0 1-2-2v-12a2 2 0 0 1 2-2H11"/><path d="M20.300 3.700a1.800 1.800 0 0 0-2.500 0L10.500 11l-.8 3.300 3.300-.8 7.300-7.300a1.800 1.800 0 0 0 0-2.500Z"/>'),
     video: svg('<rect x="2.500" y="6.500" width="13" height="11" rx="3"/><path d="m15.500 11 5.200-3.200a.5.500 0 0 1 .8.400v7.600a.5.500 0 0 1-.8.400L15.500 13"/>', 'class="cam"'),
     plus: svg('<path d="M12 5v14M5 12h14"/>', 'stroke-width="2.400"'),
+    send: svg('<path d="M12 19V5m-6 6 6-6 6 6"/>', 'stroke-width="2.400"'),
   };
 
   /* ---------------------------------------------------------- data & state */
@@ -32,19 +33,38 @@
     return { k, text: String(p || ""), img: "" };
   };
 
-  const chats = (D.chats || []).map((c) => ({
-    id: c.id,
-    name: c.name || c.id,
-    avatar: c.avatar || "",
-    unread: c.unread || 0,
-    time: c.time || "",
-    status: c.status || "",
-    log: (c.messages || []).map(norm),
-    script: c.script || [],
-    step: 0,
-    busy: false,
-    typing: false,
-  }));
+  const botKey = (id) => `messages.bot.${id}`;
+
+  function loadBot(id) {
+    try {
+      const saved = JSON.parse(localStorage.getItem(botKey(id)));
+      if (Array.isArray(saved?.messages)) return { log: saved.messages.map(norm), time: saved.time };
+    } catch {
+      // Penyimpanan browser bisa dinonaktifkan.
+    }
+    return { log: [] };
+  }
+
+  const chats = (D.chats || []).map((c) => {
+    const initial = (c.messages || []).map(norm);
+    const saved = c.bot ? loadBot(c.id) : { log: [] };
+    return {
+      id: c.id,
+      name: c.name || c.id,
+      avatar: c.avatar || "",
+      unread: saved.log.length ? 0 : c.unread || 0,
+      time: saved.time || c.time || "",
+      initialTime: c.time || "",
+      status: c.status || "",
+      log: [...initial, ...saved.log],
+      initial,
+      bot: c.bot,
+      script: c.script || [],
+      step: 0,
+      busy: false,
+      typing: false,
+    };
+  });
 
   const byId = (id) => chats.find((c) => c.id === id);
   const label = (m) => (m.img && !m.text ? "Attachment: 1 Image" : m.text);
@@ -101,6 +121,37 @@
   function setTyping(c, on) {
     c.typing = on;
     if (ui) ui.changed(c);
+  }
+
+  function sendBot(c, text) {
+    const options = c.bot.replies.find(([pattern]) => pattern.test(text.toLowerCase()))?.[1] || c.bot.fallback;
+    const reply = options[Math.floor(Math.random() * options.length)].map((line) => norm(["t", line]));
+    c.busy = true;
+    c.typing = true;
+    deliver(c, norm(["m", text]));
+    try {
+      const messages = [...c.log.slice(c.initial.length), ...reply].map((m) => [m.k, m.text]);
+      localStorage.setItem(botKey(c.id), JSON.stringify({ messages, time: c.time }));
+    } catch {
+      // Chat tetap jalan tanpa penyimpanan.
+    }
+    setTimeout(() => {
+      c.busy = false;
+      c.typing = false;
+      reply.forEach((m) => deliver(c, m));
+    }, 850);
+  }
+
+  function resetBot(c) {
+    try {
+      localStorage.removeItem(botKey(c.id));
+    } catch {
+      // Chat tetap bisa diulang tanpa penyimpanan.
+    }
+    c.log = [...c.initial];
+    c.time = c.initialTime;
+    c.status = "";
+    ui.changed(c);
   }
 
   function choose(c, choice) {
@@ -219,11 +270,20 @@
       <div class="msg-head">
         <button type="button" class="ui-btn" data-back aria-label="Back">${I.back}<span class="cnt"></span></button>
         <div class="who">${iOS.avatar(c.avatar, c.name, 48)}<span>${esc(c.name)}${I.chev}</span></div>
-        <button type="button" class="ui-btn" aria-label="FaceTime">${I.video}</button>
+        ${c.bot
+          ? '<button type="button" class="ui-btn" data-reset>Reset</button>'
+          : `<button type="button" class="ui-btn" aria-label="FaceTime">${I.video}</button>`}
       </div>
       <div class="msg-foot">
         <div class="msg-choices"></div>
-        <div class="msg-input"><span class="plus">${I.plus}</span><span class="field">iMessage${I.mic}</span></div>
+        ${c.bot
+          ? `<form class="msg-input">
+              <span class="plus">${I.plus}</span>
+              <div class="field"><input aria-label="iMessage" placeholder="iMessage" autocomplete="off" maxlength="500">
+                <button type="submit" class="msg-send" aria-label="Kirim" disabled>${I.send}</button>
+              </div>
+            </form>`
+          : `<div class="msg-input"><span class="plus">${I.plus}</span><span class="field">iMessage${I.mic}</span></div>`}
       </div>`;
 
     const sc = v.querySelector(".nv-scroll");
@@ -233,10 +293,35 @@
     const cnt = v.querySelector(".cnt");
     let shown = "";
 
+    const form = v.querySelector("form");
+    const input = form?.querySelector("input");
+    const send = form?.querySelector("button");
+    const reset = v.querySelector("[data-reset]");
+    const updateComposer = () => {
+      send.disabled = c.busy || !input.value.trim();
+      reset.disabled = c.busy;
+    };
+    if (form) {
+      input.addEventListener("input", updateComposer);
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (!text || c.busy) return;
+        input.value = "";
+        sendBot(c, text);
+      });
+      reset.addEventListener("click", () => {
+        if (!window.confirm("ulang chat sama jiminie?")) return;
+        input.value = "";
+        resetBot(c);
+      });
+    }
+
     const toBottom = (smooth) => sc.scrollTo({ top: sc.scrollHeight, behavior: smooth ? "smooth" : "auto" });
 
     v._render = (smooth) => {
       thread.innerHTML = threadHTML(c);
+      if (form) updateComposer();
 
       const step = c.busy ? null : c.script[c.step];
       const key = step ? String(c.step) : "";
