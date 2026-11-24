@@ -41,7 +41,9 @@ window.SITE = {
      Pesan yang belum dibaca di Messages otomatis tampil sendiri (atur di data/messages.js).
      Di sini untuk notifikasi lain, contoh:
      { app: "instagram", title: "Instagram", text: "jiminie menyukai fotomu", time: "2h ago" } */
-  lockNotifications: [],
+  lockNotifications: [
+    { app: "messages", title: "Jiminie", text: "1 November. jangan lupa ya 🤍", time: "3:02 AM" },
+  ],
 
   /* ---------- home screen, urut kiri → kanan, atas → bawah ----------
      "id-app"                         → ikon app (lihat daftar `apps` di bawah)
